@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "objects.h"
-
-blob gitFile;
+#include "objects/objects.h"
+#include "sgit.h"
+char *path = "/home/mateeiii11/Projects/sgit\0";
+tree sgitTree;
 int main()
 {
-    file_parser(&gitFile, "test.txt");
-    hash_blob(&gitFile);
-    printf("%us\n", gitFile.hash);
+    sgit_init(path);
     return 0;   
 }
