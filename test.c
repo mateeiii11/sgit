@@ -6,8 +6,7 @@ char *path = "/home/mateeiii11/Projects/sgit\0";
 void view(nod *p)
 {
     printf("%s\n", p->name);
-    if(p->data.entry == NULL && p->next == NULL) return;
-    if(p->data.entry != NULL) view(p->data.entry);
+    if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);
     if(p->next != NULL) view(p->next);
 }
 int main()
