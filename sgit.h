@@ -1,8 +1,8 @@
 #ifndef SGIT_H
 #define SGIT_H
 
-#include "objects/objects.h"
+#include "objects.h"
 
-tree sgit_init(char *path);
+nod* sgit_init(char *path);
 
 #endif

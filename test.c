@@ -1,11 +1,20 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "objects/objects.h"
+#include "objects.h"
 #include "sgit.h"
 char *path = "/home/mateeiii11/Projects/sgit\0";
-tree sgitTree;
+void view(nod *p)
+{
+    printf("%s\n", p->name);
+    if(p->data.entry == NULL && p->next == NULL) return;
+    if(p->data.entry != NULL) view(p->data.entry);
+    if(p->next != NULL) view(p->next);
+}
 int main()
 {
-    sgit_init(path);
+nod *head;
+
+    head = sgit_init(path);
+    view(head);
     return 0;   
 }
