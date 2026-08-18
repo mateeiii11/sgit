@@ -3,5 +3,6 @@
 
 #include <stdint.h>
 uint32_t hash(char *string);
+char *hash_intToString(uint32_t hash);
 
 #endif

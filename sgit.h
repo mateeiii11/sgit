@@ -4,5 +4,4 @@
 #include "objects.h"
 
 nod* sgit_init(char *path);
-
 #endif
