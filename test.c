@@ -7,8 +7,7 @@ char *path = "/home/mateeiii11/Projects/sgit\0";
 
 void view(nod *p)
 {
-    if(p->type == BLOB)
-        printf("%u\n", p->hash);
+    printf("Acesta este: %s cu hashul: %u\n",p->name, p->hash);
     if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);
     if(p->next != NULL) view(p->next);
 }

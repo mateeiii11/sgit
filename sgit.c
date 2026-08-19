@@ -1,11 +1,11 @@
 #include "sgit.h"
-#include "hash.h"
 #include "objects.h"
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "hash.h"
+#include <stdint.h>
+
 void hash_every_blob(nod *currentNode)
 {
     if(currentNode->type == TREE && currentNode->data.entry != NULL)
@@ -16,36 +16,18 @@ void hash_every_blob(nod *currentNode)
         hash_blob(currentNode);
 }
 
-char *create_partial_string(nod *currentNode)
+void hash_every_tree(nod *currentNode)
 {
-    char *string_hash = hash_intToString(currentNode->hash);
-    size_t size = sizeof("blob ") + strlen(string_hash) + 1 +
-        strlen(currentNode->name) + 2;
-    char *buffer = malloc(size);
-    if(currentNode->type == BLOB)
-    {
-        strcat(buffer, "blob ");
-        strcat(buffer, string_hash);
-        strcat(buffer, " ");
-        strcat(buffer, currentNode->name);
-        strcat(buffer, " ");
-    }
-    else if(currentNode->type == TREE)
-    {
-        strcat(buffer, "tree ");
-        strcat(buffer, string_hash);
-        strcat(buffer, " ");
-        strcat(buffer, currentNode->name);
-        strcat(buffer, " ");
-    }
-    free(buffer);
-}
 
-void hash_every_tree()
-{
-    
-}
+    if(currentNode->type == TREE && currentNode->data.entry != NULL)  
+        hash_every_tree(currentNode->data.entry);
 
+    if(currentNode->type == TREE && currentNode->data.entry != NULL)  
+        currentNode->hash = hash_subdirectory(currentNode);
+
+    if(currentNode->next != NULL)
+        hash_every_tree(currentNode->next);
+}
 
 void directory_concatenation(nod *p, nod *currDir)
 {
@@ -72,7 +54,8 @@ void loop_through_directory(char *path, nod *currDir)
     struct dirent *de;
     while((de = readdir(directory)) != NULL)
     {
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) continue;
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0
+    ) continue;
         nod *p;
         p = malloc(sizeof(struct nod));
         if(de->d_type == DT_DIR)
@@ -110,16 +93,46 @@ void loop_through_directory(char *path, nod *currDir)
     closedir(directory);
 }
 
+char *get_head_name(char *path)
+{
+    char *buffer = path;
+    int i = 0;
+    int last_dash_index = 0;
+    while(*path != '\0')
+    {
+       if(*path == '/') last_dash_index = i;
+       path++;
+       i++;
+    }
+    i = 0;
+    while(*buffer != '\0')
+    { 
+        if(last_dash_index == i)
+        {
+           break ;
+        }
+        i++;
+        buffer++;
+    }
+    buffer++;
+    return buffer;
+    
+    
+}
+
 nod* sgit_init(char *path)
 {
 
     nod *head;
+    char *head_name = get_head_name(path);
     head = malloc(sizeof(struct nod));
-    head->name = "sgit";
+    head->name = head_name;
     head->type = TREE;
     head->next = NULL;
     head->data.entry = NULL;
     loop_through_directory(path, head);
     hash_every_blob(head);
+    hash_every_tree(head);
+    
     return head;
 }
