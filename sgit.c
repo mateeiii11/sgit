@@ -12,26 +12,31 @@ void hash_every_blob(nod *currentNode)
         hash_every_blob(currentNode->data.entry);
     if(currentNode->next != NULL) 
         hash_every_blob(currentNode->next);
-
-    if(currentNode->data.content != NULL)
-        printf("%s\n", currentNode->data.content);
+    if(currentNode->type == BLOB)
+        hash_blob(currentNode);
 }
 
-
-void dir_cat(nod *p, nod *currDir)
+void hash_every_tree()
 {
-   if(currDir->data.entry == NULL) 
-        currDir->data.entry = p;
-   else
-   {
-       nod *t;
-       for(t = currDir->data.entry; t -> next != NULL; t = t->next);
-       t -> next = p;
-   }
     
 }
 
-void loop_through_dir(char *path, nod *currDir)
+
+void directory_concatenation(nod *p, nod *currDir)
+{
+    if(currDir->type == TREE && currDir->data.entry == NULL) 
+        currDir->data.entry = p;
+    else
+    {
+        nod *t;
+        for(t = currDir->data.entry; t -> next != NULL; t = t->next)
+            ;
+        t -> next = p;
+    }
+    
+}
+
+void loop_through_directory(char *path, nod *currDir)
 {
     DIR *directory = opendir(path);
     if(directory == NULL)
@@ -42,7 +47,7 @@ void loop_through_dir(char *path, nod *currDir)
     struct dirent *de;
     while((de = readdir(directory)) != NULL)
     {
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 ) continue;
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) continue;
         nod *p;
         p = malloc(sizeof(struct nod));
         if(de->d_type == DT_DIR)
@@ -57,8 +62,8 @@ void loop_through_dir(char *path, nod *currDir)
             strcpy(buffer, path);
             strcat(buffer, "/");
             strcat(buffer, de->d_name);
-            loop_through_dir(buffer, p);
-            dir_cat(p, currDir);
+            loop_through_directory(buffer, p);
+            directory_concatenation(p, currDir);
             free(buffer);
         }
         else  
@@ -72,11 +77,8 @@ void loop_through_dir(char *path, nod *currDir)
            strcat(buffer, "/");
            strcat(buffer, de->d_name);
            file_parser(p, buffer);
-           if(p->data.content == NULL) 
-                printf("%s\n", de->d_name);
-           p->data.entry = NULL;
            p->next = NULL;
-           dir_cat(p, currDir);
+           directory_concatenation(p, currDir);
            free(buffer);
         }
     }
@@ -92,7 +94,7 @@ nod* sgit_init(char *path)
     head->type = TREE;
     head->next = NULL;
     head->data.entry = NULL;
-    loop_through_dir(path, head);
+    loop_through_directory(path, head);
     hash_every_blob(head);
     return head;
 }

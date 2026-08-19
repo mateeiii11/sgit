@@ -24,5 +24,4 @@ typedef struct nod
 void file_parser(nod *sgitBlob, char *fileName);
 void hash_blob(nod *sgitFile);
 void hash_tree(nod *sgitTree, char *objHash);
-void view(nod *p);
 #endif
