@@ -29,7 +29,7 @@ void hash_blob(nod *sgitFile)
     char *buffer = malloc(size);
     strcpy(buffer, "blob ");
     strcat(buffer, sgitFile->data.content);
-    sgitFile->hash = hash(buffer);
+    sgitFile->hash = hash_string(buffer);
     free(buffer);
 }
 

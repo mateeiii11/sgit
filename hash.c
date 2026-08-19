@@ -1,8 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
-uint32_t hash(char *string)
+uint32_t hash_string(char *string)
 {
     uint32_t hashNumber = 5381;
     char c;
@@ -11,9 +10,9 @@ uint32_t hash(char *string)
     return hashNumber;
 }
 
-char *hash_intToString(uint32_t hash)
+char *hash_intToString(uint32_t hash_int)
 {
-    uint32_t buffer = hash;
+    uint32_t buffer = hash_int;
     short size = 0;
     while(buffer != 0) 
     {
@@ -23,10 +22,10 @@ char *hash_intToString(uint32_t hash)
     char *string = malloc(size + 1);
     size = 0;
     uint32_t ogl = 0;
-    while(hash != 0)
+    while(hash_int != 0)
     {
-        ogl = (ogl * 10) + (hash % 10);
-        hash /= 10;
+        ogl = (ogl * 10) + (hash_int % 10);
+        hash_int /= 10;
     }
     while(ogl != 0)
     {

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include "hash.h"
 void hash_every_blob(nod *currentNode)
 {
     if(currentNode->type == TREE && currentNode->data.entry != NULL)
@@ -14,6 +14,31 @@ void hash_every_blob(nod *currentNode)
         hash_every_blob(currentNode->next);
     if(currentNode->type == BLOB)
         hash_blob(currentNode);
+}
+
+char *create_partial_string(nod *currentNode)
+{
+    char *string_hash = hash_intToString(currentNode->hash);
+    size_t size = sizeof("blob ") + strlen(string_hash) + 1 +
+        strlen(currentNode->name) + 2;
+    char *buffer = malloc(size);
+    if(currentNode->type == BLOB)
+    {
+        strcat(buffer, "blob ");
+        strcat(buffer, string_hash);
+        strcat(buffer, " ");
+        strcat(buffer, currentNode->name);
+        strcat(buffer, " ");
+    }
+    else if(currentNode->type == TREE)
+    {
+        strcat(buffer, "tree ");
+        strcat(buffer, string_hash);
+        strcat(buffer, " ");
+        strcat(buffer, currentNode->name);
+        strcat(buffer, " ");
+    }
+    free(buffer);
 }
 
 void hash_every_tree()
