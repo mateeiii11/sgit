@@ -43,16 +43,11 @@ void create_partial_string(nod *currentNode, char **buffer, size_t *totalSize)
     char *string = malloc(hashCount + 1);
     snprintf(string, hashCount + 1, "%u", currentNode->hash);
     size_t size = BLOB_OR_TREE_COUNT + strlen(string)  + strlen(currentNode->name) + SPACE_TERMINATOR_COUNT;
-    bool firstTime = 0;
-    if(*totalSize == 0)
-        firstTime = 1;
     *totalSize += size;
-    *buffer = realloc(*buffer, *totalSize);
-    if(firstTime == 1)
-    {
-        (*buffer)[0] = '\0';
-        firstTime = 0;
-    }
+    if((*buffer) == NULL)
+        *buffer = calloc(1, *totalSize);
+    else
+        *buffer = realloc(*buffer, *totalSize);
 
     if(currentNode->type == BLOB)
     {
