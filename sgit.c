@@ -54,8 +54,7 @@ void loop_through_directory(char *path, nod *currDir)
     struct dirent *de;
     while((de = readdir(directory)) != NULL)
     {
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0
-    ) continue;
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) continue;
         nod *p;
         p = malloc(sizeof(struct nod));
         if(de->d_type == DT_DIR)
@@ -95,38 +94,20 @@ void loop_through_directory(char *path, nod *currDir)
 
 char *get_head_name(char *path)
 {
-    char *buffer = path;
     int i = 0;
     int last_dash_index = 0;
-    while(*path != '\0')
-    {
-       if(*path == '/') last_dash_index = i;
-       path++;
-       i++;
-    }
-    i = 0;
-    while(*buffer != '\0')
-    { 
-        if(last_dash_index == i)
-        {
-           break ;
-        }
-        i++;
-        buffer++;
-    }
-    buffer++;
-    return buffer;
-    
-    
+    for(char *temp = path; *temp != '\0'; temp++, i++)
+        if(*temp == '/')
+            last_dash_index = i;
+    return strdup(path + last_dash_index + 1);
 }
 
 nod* sgit_init(char *path)
 {
 
     nod *head;
-    char *head_name = get_head_name(path);
     head = malloc(sizeof(struct nod));
-    head->name = head_name;
+    head->name = get_head_name(path);
     head->type = TREE;
     head->next = NULL;
     head->data.entry = NULL;

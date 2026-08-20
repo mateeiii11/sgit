@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <stdlib.h>
+#include <math.h>
 
 uint32_t hash_string(char *string)
 {
@@ -9,31 +9,14 @@ uint32_t hash_string(char *string)
         hashNumber = ((hashNumber << 5) + hashNumber) + c;
     return hashNumber;
 }
-
-char *hash_intToString(uint32_t hash_int)
+short get_int_count(uint32_t hash)
 {
-    uint32_t buffer = hash_int;
+    if(hash == 0) return 1;
     short size = 0;
-    while(buffer != 0) 
+    while(hash != 0)
     {
-        buffer /= 10;
         size++;
+        hash /= 10;
     }
-    char *string = malloc(size + 1);
-    size = 0;
-    uint32_t ogl = 0;
-    while(hash_int != 0)
-    {
-        ogl = (ogl * 10) + (hash_int % 10);
-        hash_int /= 10;
-    }
-    while(ogl != 0)
-    {
-        char c = '0' + (ogl % 10);
-        ogl /= 10;
-        string[size] = c;
-        size++;
-    }
-    string[size] = '\0';
-    return string;
+    return size;
 }

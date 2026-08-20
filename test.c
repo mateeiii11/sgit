@@ -17,5 +17,6 @@ int main()
     nod *head;  
     head = sgit_init(path);
     view(head);
+    free_tree_structure(head);
     return 0;   
 }

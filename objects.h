@@ -24,4 +24,5 @@ typedef struct nod
 void file_parser(nod *sgitBlob, char *fileName);
 void hash_blob(nod *sgitFile);
 uint32_t hash_subdirectory(nod *sgitTree);
+void free_tree_structure(nod *p);
 #endif

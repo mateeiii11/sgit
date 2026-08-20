@@ -6,12 +6,13 @@
 #include <dirent.h>
 #include <stdbool.h>
 
-#define SPACE_TERMINATOR_SIZE 4
+#define SPACE_TERMINATOR_COUNT 4
+#define BLOB_OR_TREE_COUNT 4
 
 void file_parser(nod *sgitFile, char *fileName)
 {
     if(sgitFile->type == TREE) return;
-    FILE *f = fopen(fileName, "r");
+    FILE *f = fopen(fileName, "rb");
     if(f == NULL)
     {
         printf("file not opened\n");
@@ -29,7 +30,7 @@ void file_parser(nod *sgitFile, char *fileName)
 void hash_blob(nod *sgitFile)
 {
     if(sgitFile->type == TREE) return;
-    size_t size = sizeof("blob ") + strlen(sgitFile->data.content) + 1;
+    size_t size = strlen("blob ") + strlen(sgitFile->data.content) + 1;
     char *buffer = malloc(size);
     strcpy(buffer, "blob ");
     strcat(buffer, sgitFile->data.content);
@@ -39,8 +40,10 @@ void hash_blob(nod *sgitFile)
 
 void create_partial_string(nod *currentNode, char **buffer, size_t *totalSize)
 {
-    char *string = hash_intToString(currentNode->hash);
-    size_t size = sizeof("blob") + strlen(string)  + strlen(currentNode->name) + SPACE_TERMINATOR_SIZE;
+    short hashCount = get_int_count(currentNode->hash);
+    char *string = malloc(hashCount + 1);
+    snprintf(string, hashCount + 1, "%u", currentNode->hash);
+    size_t size = BLOB_OR_TREE_COUNT + strlen(string)  + strlen(currentNode->name) + SPACE_TERMINATOR_COUNT;
     bool firstTime = 0;
     if(*totalSize == 0)
         firstTime = 1;
@@ -78,9 +81,24 @@ uint32_t hash_subdirectory(nod *currentDirectory)
     size_t bufferSize = 0;
     for(nod *p = currentDirectory->data.entry; p != NULL; p = p->next)
         create_partial_string(p, &buffer, &bufferSize);
+    if(buffer == NULL)
+        buffer = strdup("");
     uint32_t rezultat = hash_string(buffer);
     free(buffer);
     return rezultat; 
+}
+
+void free_tree_structure(nod *p)
+{
+    if(p->type == TREE && p->data.entry != NULL) free_tree_structure(p->data.entry);
+    if(p->next != NULL) free_tree_structure(p->next);
+
+    if(p->name != NULL)
+        free(p->name);
+    if(p->type == BLOB && p->data.content != NULL)
+        free(p->data.content);
+    free(p);
+
 }
 
 
