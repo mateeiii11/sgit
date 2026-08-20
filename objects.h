@@ -2,11 +2,19 @@
 #define OBJECTS_H
 
 #include <stdint.h>
+#include <stdlib.h>
 typedef enum OBJ_TYPE
 {
     BLOB,
     TREE
 } OBJ_TYPE;
+
+typedef struct blob
+{
+    char *content;
+    size_t size;
+}blob;
+
 typedef struct nod
 {
     uint32_t hash;
@@ -14,7 +22,7 @@ typedef struct nod
     OBJ_TYPE type;
     union
     {
-        char *content;
+        struct blob *file;
         struct nod *entry;
     } data;
 

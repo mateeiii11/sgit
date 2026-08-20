@@ -1,12 +1,14 @@
 #include <stdint.h>
-#include <math.h>
-
-uint32_t hash_string(char *string)
+#include <stdlib.h>
+uint32_t hash_string(char *content, size_t size)
 {
     uint32_t hashNumber = 5381;
-    char c;
-    while((c = *(string++)) != 0)
+    unsigned char c;
+    for(size_t i = 0; i < size; i++)
+    { 
+        c = content[i];
         hashNumber = ((hashNumber << 5) + hashNumber) + c;
+    }
     return hashNumber;
 }
 short get_int_count(uint32_t hash)

@@ -83,6 +83,9 @@ void loop_through_directory(char *path, nod *currDir)
            strcpy(buffer, path);
            strcat(buffer, "/");
            strcat(buffer, de->d_name);
+           p->data.file = malloc(sizeof(struct blob));
+           p->data.file->content = NULL;
+           p->data.file->size = 0;
            file_parser(p, buffer);
            p->next = NULL;
            directory_concatenation(p, currDir);

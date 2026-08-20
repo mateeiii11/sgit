@@ -11,7 +11,6 @@
 
 void file_parser(nod *sgitFile, char *fileName)
 {
-    if(sgitFile->type == TREE) return;
     FILE *f = fopen(fileName, "rb");
     if(f == NULL)
     {
@@ -19,22 +18,22 @@ void file_parser(nod *sgitFile, char *fileName)
         return;
     }
     fseek(f, 0, SEEK_END);
-    long int size = ftell(f);
+    size_t fileSize = ftell(f);
     fseek(f, 0, SEEK_SET);
-    sgitFile->data.content = malloc(size + 1);
-    fread(sgitFile->data.content, 1, size, f);
-    sgitFile->data.content[size] = '\0';
+    sgitFile->data.file->content = malloc(fileSize);
+    fread(sgitFile->data.file->content, 1, fileSize, f);
+    sgitFile->data.file->size = fileSize;
     fclose(f);
 }
 
 void hash_blob(nod *sgitFile)
 {
     if(sgitFile->type == TREE) return;
-    size_t size = strlen("blob ") + strlen(sgitFile->data.content) + 1;
+    size_t size = strlen("blob ") + sgitFile->data.file->size;
     char *buffer = malloc(size);
-    strcpy(buffer, "blob ");
-    strcat(buffer, sgitFile->data.content);
-    sgitFile->hash = hash_string(buffer);
+    memcpy(buffer, "blob ", 5);
+    memcpy(buffer + 5, sgitFile->data.file->content, sgitFile->data.file->size);
+    sgitFile->hash = hash_string(buffer, size);
     free(buffer);
 }
 
@@ -83,7 +82,7 @@ uint32_t hash_subdirectory(nod *currentDirectory)
         create_partial_string(p, &buffer, &bufferSize);
     if(buffer == NULL)
         buffer = strdup("");
-    uint32_t rezultat = hash_string(buffer);
+    uint32_t rezultat = hash_string(buffer, bufferSize);
     free(buffer);
     return rezultat; 
 }
@@ -95,10 +94,12 @@ void free_tree_structure(nod *p)
 
     if(p->name != NULL)
         free(p->name);
-    if(p->type == BLOB && p->data.content != NULL)
-        free(p->data.content);
+    if(p->type == BLOB && p->data.file != NULL)
+    {
+        free(p->data.file->content);
+        free(p->data.file);
+    }
     free(p);
-
 }
 
 
