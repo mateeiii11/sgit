@@ -84,6 +84,8 @@ uint32_t hash_subdirectory(nod *currentDirectory)
 
 void free_tree_structure(nod *p)
 {
+    if(p == NULL) return;
+
     if(p->type == TREE && p->data.entry != NULL) free_tree_structure(p->data.entry);
     if(p->next != NULL) free_tree_structure(p->next);
 

@@ -8,6 +8,7 @@
 
 void hash_every_blob(nod *currentNode)
 {
+    if(currentNode == NULL) return;
     if(currentNode->type == TREE && currentNode->data.entry != NULL)
         hash_every_blob(currentNode->data.entry);
     if(currentNode->next != NULL) 
@@ -18,7 +19,7 @@ void hash_every_blob(nod *currentNode)
 
 void hash_every_tree(nod *currentNode)
 {
-
+    if(currentNode == NULL) return;
     if(currentNode->type == TREE && currentNode->data.entry != NULL)  
         hash_every_tree(currentNode->data.entry);
 
@@ -90,7 +91,7 @@ void loop_through_directory(char *path, nod *currDir)
            p->next = NULL;
            directory_concatenation(p, currDir);
            free(buffer);
-        }
+        }	
     }
     closedir(directory);
 }
@@ -113,10 +114,9 @@ nod* sgit_init(char *path)
     head->name = get_head_name(path);
     head->type = TREE;
     head->next = NULL;
-    head->data.entry = NULL;
-    loop_through_directory(path, head);
+    head->data.entry = NULL; 
+    loop_through_directory(path,head);
     hash_every_blob(head);
     hash_every_tree(head);
-    
     return head;
 }
