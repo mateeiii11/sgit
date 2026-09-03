@@ -5,6 +5,40 @@
 #include "objects.h"
 #include "hash.h"
 #include <stdint.h>
+#include <time.h>
+
+uint32_t get_parent_hash(void)
+{
+	FILE *f = fopen(".sgit/HEAD", "r");
+	if(f == NULL) return 0;
+	uint32_t parent_hash = 0;
+	if(fscanf(f, "%u", &parent_hash) != 1)
+		parent_hash = 0;
+	fclose(f);
+	return parent_hash;
+}
+
+size_t create_commit_string(char **buffer, nod *head, char *message)
+{
+	time_t current_time = time(NULL);
+	char time_string[26];
+	ctime_r(&current_time, time_string);
+
+	short root_count = get_int_count(head->hash);
+	uint32_t parentHash = get_parent_hash();
+	short parent_count = get_int_count(parentHash);
+
+	size_t bufferSize = strlen("tree ") + root_count + 1 +
+		            strlen("parent ") + parent_count + 1 +
+			    strlen(time_string) + 
+			    strlen("message ") + strlen(message) + 2;
+	*buffer = malloc(bufferSize);
+	if(*buffer == NULL) return 0;
+
+	size_t writtenBytes = snprintf(*buffer, bufferSize, "tree %u\nparent %u\n%smessage %s\n", head->hash, parentHash, time_string, message);
+	return writtenBytes;
+}
+
 void write_content_tofile(nod *currentNode)
 {
 	FILE *f;
@@ -16,8 +50,7 @@ void write_content_tofile(nod *currentNode)
 	snprintf(buffer + strlen(buffer), buffer_size-strlen(buffer), "%u", currentNode->hash);
 	f = fopen(buffer, "wbx");
 	free(buffer);
-	if(f == NULL)
-	   return;
+	if(f == NULL) return;
 	size_t bytes_written = fwrite(currentNode->data.file->content, 1, currentNode->data.file->size, f);
 	if(bytes_written != currentNode->data.file->size)
 	{
@@ -77,4 +110,47 @@ void create_tree_data(nod *currentNode)
      if(currentNode->next != NULL)
 	     create_tree_data(currentNode->next);
 }
+void change_parent_head(uint32_t hash)
+{
+	FILE *f = fopen(".sgit/HEAD", "w");
+	if(f == NULL) return;
+	fprintf(f, "%u\n", hash);
+	fclose(f);
+}
 
+void create_commit_data(nod *head, char *message)
+{
+	FILE *f;
+	char *commitString = NULL;
+	size_t size = create_commit_string(&commitString, head, message);
+	if(size == 0 || commitString == NULL) return;
+	uint32_t commit_hash = hash_string(commitString, size);
+	short count = get_int_count(commit_hash);
+	size_t buffer_size = strlen(".sgit/objects/") + count + 1;
+	char *buffer = malloc(buffer_size);
+	if(buffer == NULL) 
+	{
+		free(commitString);
+		return;
+	}
+	strcpy(buffer, ".sgit/objects/");
+	snprintf(buffer + strlen(buffer), buffer_size-strlen(buffer), "%u", commit_hash);
+	f = fopen(buffer, "wbx");
+	free(buffer);
+	if(f == NULL) 
+	{
+		free(commitString);
+		return;
+	}
+	size_t bytes_written = fwrite(commitString, 1, size, f);
+	free(commitString);
+	if(bytes_written != size)
+	{
+	   perror("Disk write error");
+	   fclose(f);
+	   return;
+	}
+	fclose(f);
+
+	change_parent_head(commit_hash);
+}

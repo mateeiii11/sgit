@@ -1,5 +1,6 @@
 #include "commands.h"
 #include <unistd.h>
+#include "objects.h"
 #include "sgit.h"
 #include <stdio.h>
 #include "objects.h"
@@ -15,13 +16,6 @@ void view(nod *p)
     if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);
     if(p->next != NULL) view(p->next);
 }
-void commit_sal(commit *c)
-{
-	printf("Commit message: %s\n", c->message);
-	if(c->head_tree != NULL) view(c->head_tree);
-	if(c->parent != NULL) commit_sal(c->parent);
-}
-
 int create_hidden_folder(const char *folder_name)
 {
     int status;
@@ -69,9 +63,7 @@ void commit_metadata(nod *tree_head, char *message)
 {
 	create_blob_data(tree_head);
 	create_tree_data(tree_head);
-}
-void commit_head()
-{
+	create_commit_data(tree_head, message);
 }
 void commit_files(char *message)
 { 
@@ -79,5 +71,6 @@ void commit_files(char *message)
     nod *tree_head;  
     tree_head = sgit_init(path);
     commit_metadata(tree_head, message);
-    commit_head();
+    printf("%s\n", "Commit initialized");
+    free_tree_structure(tree_head);
 }

@@ -30,16 +30,6 @@ typedef struct nod
     struct nod *next;
 } nod;
 
-typedef struct commit
-{
-  uint32_t hash;
-  char time[26];
-  char *message;
-
-  struct commit *parent;
-  struct nod *head_tree;
-} commit;
-
 void file_parser(nod *sgitBlob, char *fileName);
 void hash_blob(nod *sgitFile);
 uint32_t hash_subdirectory(nod *sgitTree);

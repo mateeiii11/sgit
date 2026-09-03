@@ -55,7 +55,7 @@ void loop_through_directory(char *path, nod *currDir)
     struct dirent *de;
     while((de = readdir(directory)) != NULL)
     {
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".sgit") == 0) continue;
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".sgit") == 0 || strcmp(de->d_name, ".git") == 0) continue;
         nod *p;
         p = malloc(sizeof(struct nod));
         if(de->d_type == DT_DIR)
