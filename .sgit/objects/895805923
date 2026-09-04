@@ -9,13 +9,7 @@
 #include "commit.h"
 #include <time.h>
 #include <sys/stat.h>
-
-void view(nod *p)
-{
-    printf("Acesta este: %s cu hashul: %u\n",p->name, p->hash);
-    if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);
-    if(p->next != NULL) view(p->next);
-}
+#include <string.h>
 int create_hidden_folder(const char *folder_name)
 {
     int status;
@@ -70,7 +64,61 @@ void commit_files(char *message)
     char *path = getcwd(NULL, 0);
     nod *tree_head;  
     tree_head = sgit_init(path);
+    free(path);
     commit_metadata(tree_head, message);
     printf("%s\n", "Commit initialized");
     free_tree_structure(tree_head);
+}
+
+void parse_hash(char *buffer, char *childHash)
+{
+	int index = 0;
+	int spaceCount = 0;
+	for(; *buffer != '\0'; buffer++)
+	{
+		char c = *buffer;
+		if(c == ' ') spaceCount++;
+		if(spaceCount == 2 && c >= '0' && c <= '9')
+			childHash[index++] = c;
+	}
+	childHash[index] = '\0';
+}
+
+void sgitLog(const char commitHash[12])
+{
+	size_t size = strlen(".sgit/objects/") + strlen(commitHash) + 1;
+	char *pathBuffer = malloc(size);
+	if(pathBuffer == NULL)
+	{ 
+		perror("Could not allocate enough memory");
+		return;
+	}
+	int result = snprintf(pathBuffer, size, ".sgit/objects/%s", commitHash);
+	if(result >= size) return;
+	FILE *f = fopen(pathBuffer, "r");
+	if(f == NULL)
+	{
+		perror("Could not open HEAD file");
+		free(pathBuffer);
+		return;
+	}
+
+	free(pathBuffer);
+	fseek(f, 0, SEEK_END);
+	size_t bufferSize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	char *buffer = malloc(bufferSize + 1);
+	if(buffer == NULL) 
+	{
+		fclose(f);
+		return;
+	}
+	size_t bytesRead = fread(buffer, 1, bufferSize, f);
+	buffer[bytesRead] = '\0';
+	printf("%s\n", buffer);
+	char childHash[12];
+	parse_hash(buffer, childHash);
+	free(buffer);	
+	fclose(f);
+	if(strcmp(childHash, "0") != 0) sgitLog(childHash);
 }

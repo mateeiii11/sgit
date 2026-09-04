@@ -18,22 +18,15 @@ int directory_existence(const char *path)
 
 void terminal_parser(int argc, char **argv)
 {
-     if(argc < 2) return;
-     if(strcmp(argv[1], "init") == 0)	
-     {
+     if(argc == 2 && strcmp(argv[1], "init") == 0)	
 	init();
-	return;
-     }
+     if(directory_existence(".sgit") == 1)
+     {
 
-     if(directory_existence(".sgit") == 0)
-     {
-	     printf(".sgit not initialized, run sgit init first\n");
-	     return;
-     }
-     if(argc == 3 && strcmp(argv[1], "commit") == 0)
-	commit_files(argv[2]);	
-     else if(argc == 2 && strcmp(argv[1], "log") == 0)
-     {
+        if(argc == 3 && strcmp(argv[1], "commit") == 0)
+		commit_files(argv[2]);	
+	else if(argc == 2 && strcmp(argv[1], "log") == 0)
+	{
 				
 		FILE *f = fopen(".sgit/HEAD", "r");
 		if(f == NULL)
@@ -51,6 +44,12 @@ void terminal_parser(int argc, char **argv)
 		fclose(f);
 		printf("\n");
 		sgitLog(buffer);
+	}
+     }
+     else 
+     {
+	     perror("sgit not initialized");
+	     return;
      }
 }
 
