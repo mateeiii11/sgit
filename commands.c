@@ -122,3 +122,43 @@ void sgitLog(const char commitHash[12])
 	fclose(f);
 	if(strcmp(childHash, "0") != 0) sgitLog(childHash);
 }
+
+get_hash_root_tree(char *rootTree)
+{
+	FILE *f = fopen(".sgit/HEAD", "r")
+	if(f == NULL) return;
+	char commitHash[11];
+	int result = fscanf(f, "%s", commitHash);
+	if(result != 1)
+	{
+		fclose(f);
+		return;
+	}
+	fclose(f);
+
+	size_t bufferSize = strlen(".sgit/objects/") + strlen(commitHash) + 1;
+	char *buffer = malloc(size);
+	if(buffer == NULL) return;
+	int res = snprintf(buffer, size, ".sgit/objects/%s", commitHash);
+	if(res >= size)
+	{
+		free(buffer);
+		return;
+	}
+
+	FILE *fp = fopen(buffer, "r");
+	free(buffer);
+	if(f == NULL) return;
+	
+}
+
+void status(void)
+{
+    char *path = getcwd(NULL, 0);
+    nod *disk_tree;  
+    disk_tree = sgit_init(path);
+    free(path);
+    char rootTree[11];
+    get_hash_root_tree(rootTree);
+    free_tree_structure(disk_tree);
+}
