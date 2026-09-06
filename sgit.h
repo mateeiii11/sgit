@@ -4,5 +4,6 @@
 #include "objects.h"
 
 nod* sgit_init(char *path);
-void write_files_into_tree(char commitHash[11]);
+void directory_concatenation(nod *p, nod *currentTree);
+char *get_head_name(char *path);
 #endif
