@@ -106,11 +106,6 @@ char *get_head_name(char *path)
     return strdup(path + last_dash_index + 1);
 }
 
-void write_files_into_tree(char commitHash[11])
-{
-	
-}
-
 nod* sgit_init(char *path)
 {
 

@@ -1,6 +1,0 @@
-#ifndef STATUS_H
-#define STATUS_H
-
-void get_hash_root_tree(char *rootTree);
-void create_temp_tree(char *currentTree);
-#endif

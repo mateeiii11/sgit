@@ -124,15 +124,16 @@ void sgitLog(const char commitHash[12])
 	if(strcmp(childHash, "0") != 0) sgitLog(childHash);
 }
 
-
 void status(void)
 {
     char *path = getcwd(NULL, 0);
-    nod *disk_tree;  
-    disk_tree = sgit_init(path);
+    nod *disk_tree = sgit_init(path);
     free(path);
     char rootTree[11];
+    rootTree[0] = '\0';
     get_hash_root_tree(rootTree);
-    create_temp_tree(rootTree);
+    nod *tree = create_temp_tree(rootTree);
+    get_diff(disk_tree, tree);
     free_tree_structure(disk_tree);
+    free_tree_structure(tree);
 }

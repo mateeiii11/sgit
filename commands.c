@@ -130,6 +130,7 @@ void status(void)
     nod *disk_tree = sgit_init(path);
     free(path);
     char rootTree[11];
+    rootTree[0] = '\0';
     get_hash_root_tree(rootTree);
     nod *tree = create_temp_tree(rootTree);
     get_diff(disk_tree, tree);
