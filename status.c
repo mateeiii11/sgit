@@ -24,12 +24,7 @@ void get_hash_root_tree(char *rootTree)
 	size_t bufferSize = strlen(".sgit/objects/") + strlen(commitHash) + 1;
 	char *buffer = malloc(bufferSize);
 	if(buffer == NULL) return;
-	int res = snprintf(buffer, bufferSize, ".sgit/objects/%s", commitHash);
-	if(res >= bufferSize)
-	{
-		free(buffer);
-		return;
-	}
+	snprintf(buffer, bufferSize, ".sgit/objects/%s", commitHash);
 
 	FILE *fp = fopen(buffer, "r");
 	free(buffer);
@@ -40,8 +35,8 @@ void get_hash_root_tree(char *rootTree)
 		fclose(fp);
 		return;
 	}
-	int j = 0;
-	for(int i = 0; i < strlen(rootTreeBuffer); i++)
+	size_t j = 0;
+	for(size_t i = 0; i < strlen(rootTreeBuffer); i++)
 	{
 		if(rootTreeBuffer[i] >= '0' && rootTreeBuffer[i] <= '9')
 			rootTree[j++] = rootTreeBuffer[i];

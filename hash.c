@@ -29,7 +29,7 @@ uint32_t string_to_int_hash(char *string)
 	uint32_t intHash = 0;
 	if(string == NULL) return 0;
 	if(strlen(string) > 10) return UINT32_MAX;
-	for(int i = 0; i < strlen(string); i++)
+	for(size_t i = 0; i < strlen(string); i++)
 	{
 		intHash = (intHash * 10) + (string[i] - '0');
 	}

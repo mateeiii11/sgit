@@ -54,6 +54,8 @@ void terminal_parser(int argc, char **argv)
      }
      else if(argc == 2 && strcmp(argv[1], "status") == 0)
 	     status();
+     else if(argc == 3 && strcmp(argv[1], "checkout") == 0)
+	     checkout(argv[2]);
 }
 
 int main(int argc, char **argv)

@@ -24,24 +24,19 @@ void get_hash_root_tree(char *rootTree)
 	size_t bufferSize = strlen(".sgit/objects/") + strlen(commitHash) + 1;
 	char *buffer = malloc(bufferSize);
 	if(buffer == NULL) return;
-	int res = snprintf(buffer, bufferSize, ".sgit/objects/%s", commitHash);
-	if(res >= bufferSize)
-	{
-		free(buffer);
-		return;
-	}
+	snprintf(buffer, bufferSize, ".sgit/objects/%s", commitHash);
 
 	FILE *fp = fopen(buffer, "r");
 	free(buffer);
 	if(fp == NULL) return;	
 	char rootTreeBuffer[32];
-	if(fgets(rootTreeBuffer, sizeof(rootTreeBuffer), fp) == NULL);
+	if(fgets(rootTreeBuffer, sizeof(rootTreeBuffer), fp) == NULL)
 	{
 		fclose(fp);
 		return;
 	}
-	int j = 0;
-	for(int i = 0; i < strlen(rootTreeBuffer); i++)
+	size_t j = 0;
+	for(size_t i = 0; i < strlen(rootTreeBuffer); i++)
 	{
 		if(rootTreeBuffer[i] >= '0' && rootTreeBuffer[i] <= '9')
 			rootTree[j++] = rootTreeBuffer[i];
@@ -82,7 +77,7 @@ void load_tree(char *currentTree, nod *tree)
 			p->data.file = NULL;
 			directory_concatenation(p, tree);
 		}
-		else if(strcmp(type_t, "tree") == 0)
+		else 
 		{
 			p->type = TREE;
 			p->hash = string_to_int_hash(hash_t);
@@ -144,7 +139,7 @@ void view_disk_tree(nod *p, char *path, nod *temp_tree)
 			printf("Directory: %s changed into file\n", buffer);
 
 	}
-	else if(p->type == BLOB && temp->type == TREE)
+	else if(p->type == BLOB && temp->type == BLOB)
 	{
 		if(p->hash != temp->hash)
 			printf("File: %s modified\n", buffer);
@@ -153,10 +148,7 @@ void view_disk_tree(nod *p, char *path, nod *temp_tree)
 	{
 		if(p->data.entry != NULL)
 		{
-			if(temp == NULL)
-				view_disk_tree(p->data.entry, buffer, NULL);
-			else
-				view_disk_tree(p->data.entry, buffer, temp->data.entry);
+			view_disk_tree(p->data.entry, buffer, temp->data.entry);
 		}
 	}
 	if(p->next != NULL) view_disk_tree(p->next, path, temp_tree);
@@ -177,23 +169,22 @@ void view_temp_tree(nod *p, char *path, nod *temp_tree)
 		snprintf(buffer, bufferSize, "%s",  p->name); 
 	nod *temp;
 	temp = search(temp_tree, p->name);
-	if(p->type == BLOB && temp->type == BLOB)
+	if(temp == NULL)
 	{
-		if(temp == NULL)
+		if(p->type == BLOB)
 			printf("File: %s deleted\n", buffer);
+		else if(p->type == TREE && p->data.entry != NULL)
+			view_temp_tree(p->data.entry, buffer, NULL);
 	}
 	else if(p->type == TREE && temp->type == TREE)
 	{
 		if(p->data.entry != NULL)
 		{
-			if(temp == NULL)
-				view_temp_tree(p->data.entry, buffer, NULL);
-			else
-				view_temp_tree(p->data.entry, buffer, temp->data.entry);
+			view_temp_tree(p->data.entry, buffer, temp->data.entry);
 		}
-	}
-	if(p->next != NULL) view_temp_tree(p->next, path, temp_tree);
+	}	
 	free(buffer);
+	if(p->next != NULL) view_temp_tree(p->next, path, temp_tree);
 }
 
 
