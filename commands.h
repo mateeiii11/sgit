@@ -3,6 +3,7 @@
 
 void init();
 void commit_files(char *message);
-void sgitLog(const char commitHash[12]);
+void sgitLog(const char commitHash[11]);
 void status();
+void checkout(const char commitHash[11]);
 #endif 

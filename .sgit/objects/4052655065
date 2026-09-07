@@ -35,10 +35,9 @@ void get_hash_root_tree(char *rootTree)
 	free(buffer);
 	if(fp == NULL) return;	
 	char rootTreeBuffer[32];
-	fgets(rootTreeBuffer, sizeof(rootTreeBuffer), fp);
-	if(rootTreeBuffer == NULL)
+	if(fgets(rootTreeBuffer, sizeof(rootTreeBuffer), fp) == NULL);
 	{
-		fclose(f);
+		fclose(fp);
 		return;
 	}
 	int j = 0;
@@ -83,7 +82,7 @@ void load_tree(char *currentTree, nod *tree)
 			p->data.file = NULL;
 			directory_concatenation(p, tree);
 		}
-		else
+		else if(strcmp(type_t, "tree") == 0)
 		{
 			p->type = TREE;
 			p->hash = string_to_int_hash(hash_t);
@@ -135,17 +134,22 @@ void view_disk_tree(nod *p, char *path, nod *temp_tree)
 		snprintf(buffer, bufferSize, "%s",  p->name); 
 	nod *temp;
 	temp = search(temp_tree, p->name);
-	if(p->type == BLOB)
+	if(temp == NULL)
+		printf("File: %s untracked\n", buffer);
+	else if(p->type != temp->type)
 	{
-		if(temp == NULL)
-			printf("File: %s untracked\n", buffer);
-		else 
-		{
-			if(p->hash != temp->hash)
-				printf("File: %s modified\n", buffer);
-		}
+		if(p->type == BLOB)
+			printf("File: %s changed into directory\n", buffer);
+		else if(p->type == TREE)
+			printf("Directory: %s changed into file\n", buffer);
+
 	}
-	else if(p->type == TREE)
+	else if(p->type == BLOB && temp->type == TREE)
+	{
+		if(p->hash != temp->hash)
+			printf("File: %s modified\n", buffer);
+	}
+	else if(p->type == TREE && temp->type == TREE)
 	{
 		if(p->data.entry != NULL)
 		{
@@ -173,12 +177,12 @@ void view_temp_tree(nod *p, char *path, nod *temp_tree)
 		snprintf(buffer, bufferSize, "%s",  p->name); 
 	nod *temp;
 	temp = search(temp_tree, p->name);
-	if(p->type == BLOB)
+	if(p->type == BLOB && temp->type == BLOB)
 	{
 		if(temp == NULL)
 			printf("File: %s deleted\n", buffer);
 	}
-	else if(p->type == TREE)
+	else if(p->type == TREE && temp->type == TREE)
 	{
 		if(p->data.entry != NULL)
 		{

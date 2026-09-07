@@ -41,6 +41,7 @@ void create_partial_string(nod *currentNode, char **buffer, size_t *totalSize)
 {
     short hashCount = get_int_count(currentNode->hash);
     char *string = malloc(hashCount + 1);
+    if(string == NULL) return;
     snprintf(string, hashCount + 1, "%u", currentNode->hash);
     size_t size = BLOB_OR_TREE_COUNT + strlen(string)  + strlen(currentNode->name) + SPACE_TERMINATOR_COUNT;
     *totalSize += size;
