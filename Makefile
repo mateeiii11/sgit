@@ -1,21 +1,30 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
 TARGET = sgit
-SRCS = main.c sgit.c objects.c hash.c status.c commands.c commit.c
-OBJS = $(SRCS:.c=.o)
+
+# Source files and build directory
+SRCS = commands.c commit.c hash.c main.c objects.c sgit.c status.c
+OBJ_DIR = obj
+OBJS = $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 PREFIX ?= /usr/local
 
 all: $(TARGET)
 
+# Link all object files from obj/ into the sgit executable
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-%.o: %.c
+# Rule to compile .c files into .o files inside obj/
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Create the obj/ directory if it doesn't exist
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET)
 
 install: $(TARGET)
 	install -d $(DESTDIR)$(PREFIX)/bin
