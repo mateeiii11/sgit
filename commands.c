@@ -101,6 +101,7 @@ void get_root_from_commit(const char commitHash[11], char *childHash, int space)
 	char *buffer = malloc(bufferSize + 1);
 	if(buffer == NULL) 
 	{
+		free(buffer);
 		fclose(f);
 		return;
 	}
@@ -156,12 +157,12 @@ void clean_directory(char *path)
 	snprintf(buffer, size, "%s/%s", path, de->d_name);
 	if(de->d_type == DT_DIR)
 	{
-		clean_directory(path);
-		rmdir(path);
+		clean_directory(buffer);
+		rmdir(buffer);
 	}
 	else
 	{
-		remove(path);
+		remove(buffer);
 	}
 	free(buffer);
     }
