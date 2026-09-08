@@ -39,7 +39,7 @@ Sgit has a lot of limitations. Here are a few of them:
  * `sgit commit "Message"` - creates a snapshot of the directory you are in
  * `sgit status` - checks the state of the files: untracked, deleted,  modified
  * `sgit log` - view commit history: shows root tree hash, commit parent hash, time, date and message
- * `sgit checkout` <commit-hash> - restores the files from a previous commit
+ * `sgit checkout <commit-hash>` - restores the files from a previous commit
 
 ## Installation
 
