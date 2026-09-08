@@ -1,3 +1,4 @@
+#sgit
 
 A lightweight Git-like version control system written from scratch in C.
 The name comes from combining scratch and git: sgit
