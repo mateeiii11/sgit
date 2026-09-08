@@ -12,7 +12,6 @@
 #include <string.h>
 #include "status.h"
 #include "checkout.h"
-
 int create_hidden_folder(const char *folder_name)
 {
     int status = mkdir(folder_name, 0755); 
@@ -66,16 +65,18 @@ void commit_files(char *message)
 
 void parse_hash(char *buffer, char *childHash, int space)
 {
-	int index = 0;
-	int spaceCount = 0;
-	for(; *buffer != '\0'; buffer++)
-	{
-		char c = *buffer;
-		if(c == ' ') spaceCount++;
-		if(spaceCount == space && c >= '0' && c <= '9')
-			childHash[index++] = c;
-	}
-	childHash[index] = '\0';
+    int index = 0;
+    int spaceCount = 0;
+    for(; *buffer != '\0'; buffer++)
+    {
+        char c = *buffer;
+        if(c == ' ') 
+            spaceCount++;
+        
+        if(spaceCount == space && c >= '0' && c <= '9' )
+                childHash[index++] = c;
+    }
+    childHash[index] = '\0';
 }
 
 void get_root_from_commit(const char commitHash[11], char *childHash, int space)
@@ -116,12 +117,6 @@ void sgitLog(const char commitHash[11])
 	get_root_from_commit(commitHash, childHash, 2);
 	if(strcmp(childHash, "0") != 0) sgitLog(childHash);
 }
-void view(nod *p)
-{
-    printf("Acesta este: %s cu hashul: %u\n",p->name, p->hash);
-    if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);     
-    if(p->next != NULL) view(p->next);    
-}
 void status(void)
 {
     char *path = getcwd(NULL, 0);
@@ -139,10 +134,9 @@ void checkout(const char commitHash[11])
 {	
 	char treeHash[11];
 	get_root_from_commit(commitHash, treeHash, 1);
-	printf("%s\n", commitHash);
+	printf("%s\n", treeHash);
 	nod *temp = create_temp_tree(treeHash);
 	char *path = getcwd(NULL, 0);
-	if(path == NULL) return;
 	clean_directory(path);
 	unpack_tree(temp->data.entry, path);
 	FILE *head = fopen(".sgit/HEAD", "w");

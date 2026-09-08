@@ -12,7 +12,6 @@
 #include <string.h>
 #include "status.h"
 #include "checkout.h"
-#include "log.h"
 
 int create_hidden_folder(const char *folder_name)
 {
@@ -37,7 +36,7 @@ void init(void)
 		perror("Could not create HEAD file");
 		return;
 	}
-	fprintf(fp, "%s", "");
+	fprintf(fp, "");
 	printf("%s\n", "Initialization is completed");
 	fclose(fp);
     }
@@ -47,8 +46,13 @@ void init(void)
 	    return;
     }
 }
-
-void commit(char *message)
+void commit_metadata(nod *tree_head, char *message)
+{
+	create_blob_data(tree_head);
+	create_tree_data(tree_head);
+	create_commit_data(tree_head, message);
+}
+void commit_files(char *message)
 { 
     char *path = getcwd(NULL, 0);
     if(path == NULL) return;
@@ -60,6 +64,53 @@ void commit(char *message)
     free_tree_structure(tree_head);
 }
 
+void parse_hash(char *buffer, char *childHash, int space)
+{
+    int index = 0;
+    int spaceCount = 0;
+    for(; *buffer != '\0'; buffer++)
+    {
+        char c = *buffer;
+        if(c == ' ') 
+            spaceCount++;
+        
+        if(spaceCount == space && c >= '0' && c <= '9' )
+                childHash[index++] = c;
+    }
+    childHash[index] = '\0';
+}
+
+void get_root_from_commit(const char commitHash[11], char *childHash, int space)
+{
+	size_t size = strlen(".sgit/objects/") + strlen(commitHash) + 1;
+	char *pathBuffer = malloc(size);
+	if(pathBuffer == NULL)
+	{ 
+		perror("Could not allocate enough memory");
+		return;
+	}
+	snprintf(pathBuffer, size, ".sgit/objects/%s", commitHash);
+	FILE *f = fopen(pathBuffer, "r");
+	free(pathBuffer);
+	if(f == NULL) return;
+
+	fseek(f, 0, SEEK_END);
+	size_t bufferSize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	char *buffer = malloc(bufferSize + 1);
+	if(buffer == NULL) 
+	{
+		fclose(f);
+		return;
+	}
+	size_t bytesRead = fread(buffer, 1, bufferSize, f);
+	buffer[bytesRead] = '\0';
+	fclose(f);
+	if(space == 2)
+		printf("%s\n", buffer);
+	parse_hash(buffer, childHash,space);
+	free(buffer);	
+}
 
 void sgitLog(const char commitHash[11])
 {
@@ -70,7 +121,6 @@ void sgitLog(const char commitHash[11])
 void status(void)
 {
     char *path = getcwd(NULL, 0);
-    if(path == NULL) return;
     nod *disk_tree = sgit_init(path);
     free(path);
     char rootTree[11];
@@ -85,6 +135,8 @@ void checkout(const char commitHash[11])
 {	
 	char treeHash[11];
 	get_root_from_commit(commitHash, treeHash, 1);
+	printf("%s\n", commitHash);
+	/**
 	nod *temp = create_temp_tree(treeHash);
 	char *path = getcwd(NULL, 0);
 	clean_directory(path);
@@ -98,4 +150,5 @@ void checkout(const char commitHash[11])
     	printf("HEAD is now at %s\n", commitHash);
 	free(path);
 	free_tree_structure(temp);
+	*/
 }

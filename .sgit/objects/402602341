@@ -7,7 +7,6 @@
 #include <dirent.h>
 #include "sgit.h"
 #include "status.h"
-#include "log.h"
 void clean_directory(char *path)
 {
     DIR *directory = opendir(path);
@@ -19,11 +18,7 @@ void clean_directory(char *path)
     struct dirent *de;
     while((de = readdir(directory)) != NULL)
     {
-        if (strcmp(de->d_name, ".") == 0 || 
-            strcmp(de->d_name, "..") == 0 || 
-            strcmp(de->d_name, ".sgit") == 0 || 
-            strcmp(de->d_name, ".git") == 0 ||
-            strcmp(de->d_name, "build.sh") == 0) continue;
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".sgit") == 0 || strcmp(de->d_name, ".git") == 0) continue;
 
 	size_t size = strlen(path) + strlen(de->d_name) + 2;
 	char *buffer = malloc(size);

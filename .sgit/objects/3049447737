@@ -1,0 +1,8 @@
+blob 1912442683 hash.o
+blob 3313290726 objects.o
+blob 844329249 checkout.o
+blob 3070907306 commit.o
+blob 2956834283 status.o
+blob 3571105434 sgit.o
+blob 2603339063 main.o
+blob 40283559 commands.o

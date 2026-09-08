@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
 uint32_t hash_string(char *content, size_t size)
 {
     uint32_t hashNumber = 5381;

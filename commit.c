@@ -154,3 +154,10 @@ void create_commit_data(nod *head, char *message)
 
 	change_parent_head(commit_hash);
 }
+
+void commit_metadata(nod *tree_head, char *message)
+{
+	create_blob_data(tree_head);
+	create_tree_data(tree_head);
+	create_commit_data(tree_head, message);
+}

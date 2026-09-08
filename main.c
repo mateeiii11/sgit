@@ -31,7 +31,7 @@ void terminal_parser(int argc, char **argv)
 	     return;
      }
      if(argc == 3 && strcmp(argv[1], "commit") == 0)
-	commit_files(argv[2]);	
+	commit(argv[2]);	
      else if(argc == 2 && strcmp(argv[1], "log") == 0)
      {
 				
@@ -41,7 +41,7 @@ void terminal_parser(int argc, char **argv)
 			perror("Could not open HEAD file");
 			return;
 		}
-		char buffer[12];
+		char buffer[11];
 
 		if(fscanf(f, "%s", buffer) != 1)
 		{
