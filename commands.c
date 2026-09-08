@@ -11,7 +11,8 @@
 #include <sys/stat.h>
 #include <string.h>
 #include "status.h"
-#include <dirent.h>
+#include "checkout.h"
+
 int create_hidden_folder(const char *folder_name)
 {
     int status = mkdir(folder_name, 0755); 
@@ -54,6 +55,7 @@ void commit_metadata(nod *tree_head, char *message)
 void commit_files(char *message)
 { 
     char *path = getcwd(NULL, 0);
+    if(path == NULL) return;
     nod *tree_head;  
     tree_head = sgit_init(path);
     free(path);
@@ -64,16 +66,27 @@ void commit_files(char *message)
 
 void parse_hash(char *buffer, char *childHash, int space)
 {
-	int index = 0;
-	int spaceCount = 0;
-	for(; *buffer != '\0'; buffer++)
-	{
-		char c = *buffer;
-		if(c == ' ') spaceCount++;
-		if(spaceCount == space && c >= '0' && c <= '9')
-			childHash[index++] = c;
-	}
-	childHash[index] = '\0';
+    int index = 0;
+    int spaceCount = 0;
+    for(; *buffer != '\0'; buffer++)
+    {
+        char c = *buffer;
+        if(c == ' ') 
+        {
+            spaceCount++;
+            if(spaceCount > space) break;             
+        }
+        
+        if(spaceCount == space)
+        {
+            if(c == '\n' || c == '\r') break; 
+            if(c >= '0' && c <= '9')
+            {
+                childHash[index++] = c;
+            }
+        }
+    }
+    childHash[index] = '\0';
 }
 
 void get_root_from_commit(const char commitHash[11], char *childHash, int space)
@@ -87,31 +100,25 @@ void get_root_from_commit(const char commitHash[11], char *childHash, int space)
 	}
 	snprintf(pathBuffer, size, ".sgit/objects/%s", commitHash);
 	FILE *f = fopen(pathBuffer, "r");
-	if(f == NULL)
-	{
-		perror("Could not open HEAD file");
-		free(pathBuffer);
-		return;
-	}
-
 	free(pathBuffer);
+	if(f == NULL) return;
+
 	fseek(f, 0, SEEK_END);
 	size_t bufferSize = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	char *buffer = malloc(bufferSize + 1);
 	if(buffer == NULL) 
 	{
-		free(buffer);
 		fclose(f);
 		return;
 	}
 	size_t bytesRead = fread(buffer, 1, bufferSize, f);
 	buffer[bytesRead] = '\0';
+	fclose(f);
 	if(space == 2)
 		printf("%s\n", buffer);
 	parse_hash(buffer, childHash,space);
 	free(buffer);	
-	fclose(f);
 }
 
 void sgitLog(const char commitHash[11])
@@ -119,12 +126,6 @@ void sgitLog(const char commitHash[11])
 	char childHash[11];
 	get_root_from_commit(commitHash, childHash, 2);
 	if(strcmp(childHash, "0") != 0) sgitLog(childHash);
-}
-void view(nod *p)
-{
-    printf("Acesta este: %s cu hashul: %u\n",p->name, p->hash);
-    if(p->type == TREE && p->data.entry != NULL) view(p->data.entry);     
-    if(p->next != NULL) view(p->next);    
 }
 void status(void)
 {
@@ -139,82 +140,6 @@ void status(void)
     free_tree_structure(disk_tree);
     free_tree_structure(tree);
 }
-void clean_directory(char *path)
-{
-    DIR *directory = opendir(path);
-    if(directory == NULL)
-    {
-        perror("Directory not opened");
-        return;
-    }
-    struct dirent *de;
-    while((de = readdir(directory)) != NULL)
-    {
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".sgit") == 0 || strcmp(de->d_name, ".git") == 0) continue;
-
-	size_t size = strlen(path) + strlen(de->d_name) + 2;
-	char *buffer = malloc(size);
-	snprintf(buffer, size, "%s/%s", path, de->d_name);
-	if(de->d_type == DT_DIR)
-	{
-		clean_directory(buffer);
-		rmdir(buffer);
-	}
-	else
-	{
-		remove(buffer);
-	}
-	free(buffer);
-    }
-    closedir(directory);
-
-}
-
-void restore_blob(nod *currentNode, char *path)
-{
-	FILE *f = fopen(path, "wb");
-	if(f == NULL) return;
-       size_t bytes_written = fwrite(currentNode->data.file->content, 1, currentNode->data.file->size, f);
-	if(bytes_written != currentNode->data.file->size)
-	{
-	   perror("Disk write error");
-	   fclose(f);
-	   return;
-	}
-	fclose(f);
-}
-
-void unpack_tree(nod *p, char *path)
-{
-	if(p == NULL) return;
-	size_t bufferSize;
-	if (strlen(path) > 0)
-        	bufferSize = strlen(path) + 1 + strlen(p->name) + 1;
-   	else
-        	bufferSize = strlen(p->name) + 1;
-
-    	char *buffer = malloc(bufferSize);
-    	if (buffer == NULL) return;
-
-   	 if (strlen(path) > 0)
-        	snprintf(buffer, bufferSize, "%s/%s", path, p->name);
-    	else
-        	snprintf(buffer, bufferSize, "%s", p->name);
-	if(p->type == BLOB)
-		restore_blob(p, buffer);
-	else if(p->type == TREE)
-	{
-		mkdir(buffer, 0755);
-		if(p->data.entry != NULL)
-			unpack_tree(p->data.entry, buffer);
-	}
-
-	free(buffer);
-	if(p->next != NULL) unpack_tree(p->next, path);
-
-
-	
-}
 void checkout(const char commitHash[11])
 {	
 	char treeHash[11];
@@ -222,7 +147,6 @@ void checkout(const char commitHash[11])
 	printf("%s\n", commitHash);
 	nod *temp = create_temp_tree(treeHash);
 	char *path = getcwd(NULL, 0);
-	if(path == NULL) return;
 	clean_directory(path);
 	unpack_tree(temp->data.entry, path);
 	FILE *head = fopen(".sgit/HEAD", "w");

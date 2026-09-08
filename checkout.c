@@ -1,0 +1,98 @@
+#include <unistd.h>
+#include "objects.h"
+#include <sys/stat.h>
+#include <string.h>
+#include "checkout.h"
+#include <stdio.h>
+#include <dirent.h>
+#include "sgit.h"
+#include "status.h"
+
+void clean_directory(char *path)
+{
+    DIR *directory = opendir(path);
+    if(directory == NULL)
+    {
+        perror("Directory not opened");
+        return;
+    }
+    struct dirent *de;
+    while((de = readdir(directory)) != NULL)
+    {
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".sgit") == 0 || strcmp(de->d_name, ".git") == 0) continue;
+
+	size_t size = strlen(path) + strlen(de->d_name) + 2;
+	char *buffer = malloc(size);
+	snprintf(buffer, size, "%s/%s", path, de->d_name);
+	if(de->d_type == DT_DIR)
+	{
+		clean_directory(buffer);
+		rmdir(buffer);
+	}
+	else
+	{
+		remove(buffer);
+	}
+	free(buffer);
+    }
+    closedir(directory);
+
+}
+void restore_blob(nod *currentNode, char *path)
+{
+    	char buffer[32];
+    	snprintf(buffer, sizeof(buffer), ".sgit/objects/%u", currentNode->hash);
+
+    	FILE *src = fopen(buffer, "rb");
+    	if (src == NULL) return;
+
+    	FILE *f = fopen(path, "wb");
+    	if (f == NULL)
+    	{
+        	fclose(src);
+        	return;
+    	}
+
+    	char temp[1024];
+    	size_t bytes;
+    	while ((bytes = fread(temp, 1, sizeof(temp), src)) > 0)
+    	{
+        	fwrite(temp, 1, bytes, f);
+    	}
+
+    	fclose(src);
+    	fclose(f);
+}
+
+void unpack_tree(nod *p, char *path)
+{
+	if(p == NULL) return;
+	size_t bufferSize;
+	if (strlen(path) > 0)
+        	bufferSize = strlen(path) + 1 + strlen(p->name) + 1;
+   	else
+        	bufferSize = strlen(p->name) + 1;
+
+    	char *buffer = malloc(bufferSize);
+    	if (buffer == NULL) return;
+
+   	 if (strlen(path) > 0)
+        	snprintf(buffer, bufferSize, "%s/%s", path, p->name);
+    	else
+        	snprintf(buffer, bufferSize, "%s", p->name);
+	if(p->type == BLOB)
+		restore_blob(p, buffer);
+	else if(p->type == TREE)
+	{
+		mkdir(buffer, 0755);
+		if(p->data.entry != NULL)
+			unpack_tree(p->data.entry, buffer);
+	}
+
+	free(buffer);
+	if(p->next != NULL) unpack_tree(p->next, path);
+
+
+	
+}
+
